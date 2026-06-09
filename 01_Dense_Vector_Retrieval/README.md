@@ -1,15 +1,11 @@
-<p align = "center" draggable="false" ><img src="https://github.com/AI-Maker-Space/LLM-Dev-101/assets/37101144/d1343317-fa2f-41e1-8af1-1dbb18399719"
-     width="200px"
-     height="auto"/>
-</p>
-
-<h1 align="center" id="heading">Session 1: Dense Vector Retrieval</h1>
+# Session 1: Dense Vector Retrieval
 
 ### [Quicklinks]()
 
-| 📰 Module Sheet                                                                 | ⏺️ Recording | 🖼️ Slides | 👨‍💻 Repo       | 📝 Homework | 📁 Feedback |
-| :------------------------------------------------------------------------------- | :----------- | :-------- | :------------ | :---------- | :---------- |
-| [Dense Vector Retrieval](../00_Docs/Modules/01_Dense_Vector_Retrieval/README.md) |[Recording!](https://us02web.zoom.us/rec/share/sHWvo0Nd1aI0SEhKecOLEX9kFGVJJAdYfsKiuTmm8t85W48Z2lnjpnzTy8jAd8R5.PwuqibGwAZhvDd8c) <br> passcode: `C62n^@Q!`| [Session 1 Slides](https://canva.link/htfqf8i39yejyhn) | You are here! | [Session 1 Assignment](https://forms.gle/Z9qskfVaAvPjn6gz8) | [Feedback 6/2](https://forms.gle/21a2uoL9DVZPwgJP6) |
+
+| 📰 Module Sheet                                                                  | ⏺️ Recording                                                                                                                                           | 🖼️ Slides                                             | 👨‍💻 Repo    | 📝 Homework                                                 | 📁 Feedback                                         |
+| -------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------ | ------------- | ----------------------------------------------------------- | --------------------------------------------------- |
+| [Dense Vector Retrieval](../00_Docs/Modules/01_Dense_Vector_Retrieval/README.md) | [Recording!](https://us02web.zoom.us/rec/share/sHWvo0Nd1aI0SEhKecOLEX9kFGVJJAdYfsKiuTmm8t85W48Z2lnjpnzTy8jAd8R5.PwuqibGwAZhvDd8c) passcode: `C62n^@Q!` | [Session 1 Slides](https://canva.link/htfqf8i39yejyhn) | You are here! | [Session 1 Assignment](https://forms.gle/Z9qskfVaAvPjn6gz8) | [Feedback 6/2](https://forms.gle/21a2uoL9DVZPwgJP6) |
 
 
 ## 🏗️ How AIM Does Assignments
@@ -19,9 +15,7 @@
 Each assignment will have a few of the following categories of exercises:
 
 - ❓ **Questions** - these will be questions that you will be expected to gather the answer to. These can appear as general questions, or questions meant to spark a discussion in your breakout rooms.
-
 - 🏗️ **Activities** - these will be work or coding activities meant to reinforce specific concepts or theory components.
-
 - 🚧 **Advanced Builds (optional)** - Take on a challenge. These builds require you to create something with minimal guidance outside of the documentation.
 
 ## Main Assignment
@@ -67,7 +61,7 @@ You will compare embeddings for terms like:
 
 Why is cosine similarity useful for dense vector retrieval?
 
-##### ✅ Answer:
+##### ✅ Answer: Cosine similarity measures the angle in between vectors other than its magnitude in the embedding space and for embeddings, the **meaning is often encoded more in the direction than in the length**, so cosine similarity better reflects semantic similarity in between terms.
 
 ---
 
@@ -86,19 +80,19 @@ Run the notebook sections that:
 
 Why is metadata important for a RAG application?
 
-##### ✅ Answer:
+##### ✅ Answer: Metadata can provide more structured information about documents that embeddings alone cannot capture. Other than just comparing the sematic similarity in between user query and document chunks, metadata can be used to improve precision and ensure the model retrieves relevant, authorized, and up-to-date information.
 
 #### ❓Question #3
 
 What tradeoff do we make when choosing chunk size and chunk overlap?
 
-##### ✅ Answer:
+##### ✅ Answer:  Smaller chunk helps with improving retrieval accuracy but can lose important context while larger chuck is the opposite with providing more but maybe unnessary context and higher token cost. Overlap helps prevent important information from being split across chunk boundaries and improving recalls, but increases storage, embedding costs, and duplicate retrievals.
 
 #### ❓Question #4
 
 What does a similarity score help you understand, and what does it not prove by itself?
 
-##### ✅ Answer:
+##### ✅ Answer: A similarity score for ranking the retrieval results and also tells us how semantically similar a query embedding is to a document embedding. It does not prove that the retrieved document has the correct answer, is factually accurate, is the best available result, and fully matches the user’s intents.
 
 ---
 
@@ -113,7 +107,7 @@ Run the notebook's vibe check queries and inspect both:
 
 For the vibe check queries, did the retrieved context seem relevant before generation? Why or why not?
 
-##### ✅ Answer:
+##### ✅ Answer: The retrieved context seems pretty relevant for the first three questions which are all cat health related. But for the last one, it's not relevant at all. Just like what we answered in the first question, we retrieve and rank the context based on the cosine similarity in between their vector embbedings. When input query and document is already semantic similar (all about cat health), the more confidence we can get from the the resources and vice versa.
 
 ---
 
@@ -128,15 +122,11 @@ Improve retrieval quality by changing one or more of:
 
 Document what changed and whether retrieval improved.
 
-##### Settings Changed:
+##### Settings Changed: I tried to decrease the chunk size and chunk overlap to be much smaller (1000 -> 200), (200 -> 40) and I noticed that if i do that, the accurate drops significantly, because the context becomes much shorter. the results are just not related to what i ask.
 
--
+- 
 
-##### Results:
-
-1.
-2.
-3.
+##### Results: Significantly reduced accuracy and more processing time.
 
 ---
 
@@ -172,9 +162,9 @@ git pull upstream main
 git push origin main
 ```
 
-2. Start Cursor from the `01_Dense_Vector_Retrieval` folder.
-3. Complete the notebook.
-4. Answer the questions in this `README.md`.
-5. Add, commit, and push your modified work to your origin repository.
+1. Start Cursor from the `01_Dense_Vector_Retrieval` folder.
+2. Complete the notebook.
+3. Answer the questions in this `README.md`.
+4. Add, commit, and push your modified work to your origin repository.
 
 When submitting your homework, provide the GitHub URL to your AIE9 repo.
