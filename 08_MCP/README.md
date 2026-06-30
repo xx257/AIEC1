@@ -1,19 +1,19 @@
-<p align="center" draggable="false"><img src="https://github.com/AI-Maker-Space/LLM-Dev-101/assets/37101144/d1343317-fa2f-41e1-8af1-1dbb18399719"
-     width="200px"
-     height="auto"/>
-</p>
 
-<h1 align="center" id="heading">Session 8: Model Context Protocol (MCP)</h1>
+
+# Session 8: Model Context Protocol (MCP)
 
 ### [Quicklinks]()
 
-| Session Sheet | Recording | Slides | Repo | Homework | Feedback |
-|:--------------|:----------|:-------|:-----|:---------|:---------|
-| [Session 8: MCP](https://github.com/AI-Maker-Space/The-AI-Engineering-Certification-v1.0/tree/main/00_Docs/Modules/08_MCP) |[Recording!](https://us02web.zoom.us/rec/share/rqw5I5hwbOOHy8TrGjnu0IjDJi53ykHb0k897jYfyHqZpgRhUuFP4A18d4NrcEKS.18sNk6Do9XwyaVUy) <br> passcode: `E56&^V+8`| [Session 8 Slides](https://canva.link/k8cixqgkfeghdsn) |You are here! | [Session 8 Assignment](https://forms.gle/TcjjChq38ydMjuqn8) | [Feedback 6/25](https://forms.gle/DvcWDgBXatBWCXqi7) |
+
+| Session Sheet                                                                                                              | Recording                                                                                                                                              | Slides                                                 | Repo          | Homework                                                    | Feedback                                             |
+| -------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------ | ------------- | ----------------------------------------------------------- | ---------------------------------------------------- |
+| [Session 8: MCP](https://github.com/AI-Maker-Space/The-AI-Engineering-Certification-v1.0/tree/main/00_Docs/Modules/08_MCP) | [Recording!](https://us02web.zoom.us/rec/share/rqw5I5hwbOOHy8TrGjnu0IjDJi53ykHb0k897jYfyHqZpgRhUuFP4A18d4NrcEKS.18sNk6Do9XwyaVUy) passcode: `E56&^V+8` | [Session 8 Slides](https://canva.link/k8cixqgkfeghdsn) | You are here! | [Session 8 Assignment](https://forms.gle/TcjjChq38ydMjuqn8) | [Feedback 6/25](https://forms.gle/DvcWDgBXatBWCXqi7) |
+
 
 ## Useful Resources
 
 **MCP (Model Context Protocol)**
+
 - [MCP Official Docs](https://modelcontextprotocol.io/) — Spec, tutorials, and guides
 - [MCP-UI](https://mcpui.dev/) — Official standard for interactive UI in MCP
 - [MCP Auth Guide (Auth0)](https://auth0.com/blog/mcp-specs-update-all-about-auth/) — Deep dive into MCP auth spec updates
@@ -137,7 +137,7 @@ Shout out to @AIMakerspace !
 Feel free to reach out if you're curious or would like to collaborate on similar projects! 🤝🔥
 ```
 
-## Submitting Your Homework 
+## Submitting Your Homework
 
 Follow these steps to prepare and submit your homework assignment:
 
@@ -155,7 +155,9 @@ Why is OAuth important for MCP servers, and what security considerations should 
 
 #### Answer
 
-_(insert your answer here)_
+OAuth is important for MCP servers because many tools access user-specific data or perform actions on a user’s behalf. Instead of handling usernames and passwords directly, the MCP server can rely on a trusted OAuth provider to authenticate the user and receive an access token. The server then uses that token to verify the user’s identity and ensure requests are associated with the correct account.
+
+When exposing tools to AI clients, it’s important not to assume the AI client is trustworthy. The MCP server should always validate access tokens, enforce authorization, and only allow users to access resources they have permission to use. It’s also a good practice to follow the principle of least privilege by granting only the permissions a tool actually needs, and to add extra protection for sensitive operations such as modifying data or completing purchases.
 
 ### Question #2
 
@@ -163,7 +165,9 @@ What is Streamable HTTP transport in MCP, and why might you expose a server publ
 
 #### Answer
 
-_(insert your answer here)_
+Streamable HTTP is an MCP transport that allows clients and servers to communicate over HTTP while supporting streaming responses. Unlike a local `stdio` connection, which only works between processes on the same machine, Streamable HTTP allows an MCP server to be accessed over a network by multiple clients and supports web-based features such as authentication.
+
+In this homework, exposing the MCP server publicly is necessary because OAuth requires a publicly accessible callback URL for the authentication flow. After the user signs in, the OAuth provider redirects the user back to the MCP server to complete authentication and issue an access token. A local `stdio` connection cannot support this browser-based flow, while a public HTTP endpoint (such as one exposed with ngrok) enables secure user authentication and makes the MCP server accessible to remote AI clients.
 
 ## Activity 1: Extend the MCP Server
 
