@@ -3,25 +3,35 @@
 import { useEffect, useRef, useState } from "react";
 import { useStream } from "@langchain/react";
 import {
-  Bot,
   FileText,
   Loader2,
+  PawPrint,
   Search,
   Send,
-  User,
+  Sparkles,
   Wrench,
 } from "lucide-react";
 
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import {
+  Message,
+  MessageContent,
+  MessageResponse,
+} from "@/components/ai-elements/message";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { cn } from "@/lib/utils";
 import { getMessageText, toolLabel } from "@/lib/messages";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "/api";
+const CONFIGURED_API_URL = process.env.NEXT_PUBLIC_API_URL;
+
+function getApiUrl() {
+  if (CONFIGURED_API_URL?.startsWith("http")) return CONFIGURED_API_URL;
+  if (typeof window !== "undefined") {
+    return new URL(CONFIGURED_API_URL ?? "/api", window.location.origin).toString();
+  }
+  return new URL(CONFIGURED_API_URL ?? "/api", "http://localhost:3000").toString();
+}
 
 type StreamMessage = ReturnType<typeof useStream>["messages"][number];
 
@@ -38,14 +48,16 @@ function toolIcon(name?: string) {
 }
 
 export function Chat({ assistantId }: { assistantId: string }) {
-  const stream = useStream({ apiUrl: API_URL, assistantId });
+  const stream = useStream({ apiUrl: getApiUrl(), assistantId });
   const { messages, isLoading, error } = stream;
 
   const [input, setInput] = useState("");
-  const endRef = useRef<HTMLDivElement>(null);
+  const messageViewportRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    endRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
+    const viewport = messageViewportRef.current;
+    if (!viewport) return;
+    viewport.scrollTo({ top: viewport.scrollHeight, behavior: "smooth" });
   }, [messages, isLoading]);
 
   const send = (text: string) => {
@@ -61,26 +73,33 @@ export function Chat({ assistantId }: { assistantId: string }) {
   };
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col">
-      <ScrollArea className="flex-1">
-        <div className="mx-auto flex w-full max-w-3xl flex-col gap-4 px-4 py-6">
+    <div className="flex min-h-0 flex-1 flex-col bg-[radial-gradient(circle_at_top,_var(--color-accent),_transparent_38%)]">
+      <div
+        ref={messageViewportRef}
+        className="min-h-0 flex-1 overflow-y-auto overscroll-contain"
+      >
+        <div className="mx-auto flex w-full max-w-3xl flex-col gap-7 px-4 py-8 sm:px-6">
           {messages.length === 0 && (
-            <div className="mt-10 flex flex-col items-center gap-6 text-center">
-              <div className="flex size-14 items-center justify-center rounded-full bg-muted">
-                <Bot className="size-7 text-muted-foreground" />
+            <div className="mx-auto mt-[8vh] flex max-w-2xl flex-col items-center gap-7 text-center">
+              <div className="relative flex size-16 items-center justify-center rounded-2xl border bg-background shadow-sm">
+                <PawPrint className="size-8 text-primary" />
+                <Sparkles className="absolute -right-2 -top-2 size-5 text-amber-500" />
               </div>
-              <div className="space-y-1">
-                <h2 className="text-lg font-medium">Ask the cat health agent</h2>
-                <p className="text-sm text-muted-foreground">
-                  Streams from your LangGraph deployment via a secure proxy.
+              <div className="space-y-2">
+                <h1 className="text-balance text-3xl font-semibold tracking-tight sm:text-4xl">
+                  How can I help your cat today?
+                </h1>
+                <p className="mx-auto max-w-lg text-pretty text-sm leading-6 text-muted-foreground sm:text-base">
+                  Ask about everyday care, nutrition, vaccinations, or symptoms.
+                  I’ll search the available veterinary resources when useful.
                 </p>
               </div>
-              <div className="flex flex-wrap justify-center gap-2">
+              <div className="grid w-full gap-2 sm:grid-cols-3">
                 {SUGGESTIONS.map((s) => (
                   <Button
                     key={s}
                     variant="outline"
-                    size="sm"
+                    className="h-auto justify-start whitespace-normal rounded-xl bg-background/80 px-4 py-3 text-left text-sm shadow-xs"
                     onClick={() => send(s)}
                   >
                     {s}
@@ -103,36 +122,40 @@ export function Chat({ assistantId }: { assistantId: string }) {
               </CardContent>
             </Card>
           )}
-
-          <div ref={endRef} />
+          <div aria-hidden="true" className="h-px" />
         </div>
-      </ScrollArea>
+      </div>
 
-      <div className="border-t bg-background">
+      <div className="z-10 shrink-0 border-t bg-background/90 backdrop-blur-xl">
         <form
           onSubmit={onSubmit}
-          className="mx-auto flex w-full max-w-3xl items-center gap-2 px-4 py-3"
+          className="mx-auto w-full max-w-3xl px-4 pb-3 pt-3 sm:px-6"
         >
-          <Input
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            placeholder="Message the agent..."
-            disabled={isLoading}
-            className="h-10"
-            autoFocus
-          />
-          <Button
-            type="submit"
-            size="lg"
-            disabled={isLoading || input.trim().length === 0}
-            className="h-10"
-          >
-            {isLoading ? (
-              <Loader2 className="size-4 animate-spin" />
-            ) : (
-              <Send className="size-4" />
-            )}
-          </Button>
+          <div className="flex items-center gap-2 rounded-2xl border bg-background p-2 shadow-lg shadow-black/5 ring-1 ring-black/[0.02] transition-shadow focus-within:shadow-xl">
+            <Input
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              placeholder="Ask about your cat..."
+              className="h-11 border-0 bg-transparent shadow-none focus-visible:ring-0"
+              autoFocus
+            />
+            <Button
+              type="submit"
+              size="icon"
+              disabled={isLoading || input.trim().length === 0}
+              className="size-10 shrink-0 rounded-xl"
+              aria-label="Send message"
+            >
+              {isLoading ? (
+                <Loader2 className="size-4 animate-spin" />
+              ) : (
+                <Send className="size-4" />
+              )}
+            </Button>
+          </div>
+          <p className="pt-2 text-center text-[11px] text-muted-foreground">
+            General information only — contact a veterinarian for medical advice.
+          </p>
         </form>
       </div>
     </div>
@@ -170,23 +193,8 @@ function MessageRow({ message }: { message: StreamMessage }) {
   }
 
   return (
-    <div
-      className={cn(
-        "flex w-full items-start gap-3",
-        isHuman && "flex-row-reverse"
-      )}
-    >
-      <Avatar>
-        <AvatarFallback>
-          {isHuman ? (
-            <User className="size-4" />
-          ) : (
-            <Bot className="size-4" />
-          )}
-        </AvatarFallback>
-      </Avatar>
-
-      <div className={cn("flex max-w-[80%] flex-col gap-2", isHuman && "items-end")}>
+    <Message from={isHuman ? "user" : "assistant"}>
+      <div className="flex flex-col gap-2">
         {toolCalls.length > 0 && (
           <div className="flex flex-wrap gap-1.5">
             {toolCalls.map((tc, idx) => (
@@ -199,34 +207,26 @@ function MessageRow({ message }: { message: StreamMessage }) {
         )}
 
         {text && (
-          <div
-            className={cn(
-              "rounded-2xl px-4 py-2.5 text-sm whitespace-pre-wrap",
-              isHuman
-                ? "bg-primary text-primary-foreground"
-                : "bg-muted text-foreground"
+          <MessageContent>
+            {isHuman ? (
+              <p className="whitespace-pre-wrap">{text}</p>
+            ) : (
+              <MessageResponse isAnimating={false}>{text}</MessageResponse>
             )}
-          >
-            {text}
-          </div>
+          </MessageContent>
         )}
       </div>
-    </div>
+    </Message>
   );
 }
 
 function ThinkingRow() {
   return (
-    <div className="flex w-full items-start gap-3">
-      <Avatar>
-        <AvatarFallback>
-          <Bot className="size-4" />
-        </AvatarFallback>
-      </Avatar>
-      <div className="flex items-center gap-2 rounded-2xl bg-muted px-4 py-3 text-sm text-muted-foreground">
+    <Message from="assistant">
+      <MessageContent className="flex-row items-center text-muted-foreground">
         <Loader2 className="size-4 animate-spin" />
-        Thinking...
-      </div>
-    </div>
+        <span>Thinking…</span>
+      </MessageContent>
+    </Message>
   );
 }
