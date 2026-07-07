@@ -1,27 +1,28 @@
-<p align="center" draggable="false"><img src="https://github.com/AI-Maker-Space/LLM-Dev-101/assets/37101144/d1343317-fa2f-41e1-8af1-1dbb18399719"
-     width="200px"
-     height="auto"/>
-</p>
 
-<h1 align="center" id="heading">Session 9: Agent Servers</h1>
+
+# Session 9: Agent Servers
 
 ### [Quicklinks]()
 
-| Session Sheet | Recording | Slides | Repo | Homework | Feedback |
-|:--------------|:----------|:-------|:-----|:---------|:---------|
-| [Session 9: Agent Servers & E2E Agents](https://github.com/AI-Maker-Space/The-AI-Engineering-Certification-v1.0/tree/main/00_Docs/Modules/09_Agent_servers_%26_E2E_Agents) |[Recording!](https://us02web.zoom.us/rec/share/ByhPGNz-CQ4C9k859VnRIoGPfkS4AdBzLPQiCIgEafYiDjYxtNXUjidTI1dM-79R.oCxzwNn0SyVAWj88) <br> passcode: `r14dvS$V`| [Session 9 Slides](https://canva.link/yqymnzjmzhpnyiy) | You are here! | [Session 9 Assignment](https://forms.gle/PMmqBBLZ8d8fGg1L8) | [Feedback 7/1](https://forms.gle/36tnHPpeS562DD3fA) |
+
+| Session Sheet                                                                                                                                                              | Recording                                                                                                                                              | Slides                                                 | Repo          | Homework                                                    | Feedback                                            |
+| -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------ | ------------- | ----------------------------------------------------------- | --------------------------------------------------- |
+| [Session 9: Agent Servers & E2E Agents](https://github.com/AI-Maker-Space/The-AI-Engineering-Certification-v1.0/tree/main/00_Docs/Modules/09_Agent_servers_%26_E2E_Agents) | [Recording!](https://us02web.zoom.us/rec/share/ByhPGNz-CQ4C9k859VnRIoGPfkS4AdBzLPQiCIgEafYiDjYxtNXUjidTI1dM-79R.oCxzwNn0SyVAWj88) passcode: `r14dvS$V` | [Session 9 Slides](https://canva.link/yqymnzjmzhpnyiy) | You are here! | [Session 9 Assignment](https://forms.gle/PMmqBBLZ8d8fGg1L8) | [Feedback 7/1](https://forms.gle/36tnHPpeS562DD3fA) |
+
 
 ## Useful Resources
 
 **LangSmith Deployment & Studio**
+
 - [LangSmith Deployment docs](https://docs.langchain.com/langsmith/deployments) — Deploy, manage, and monitor agent APIs
 - [LangGraph Studio](https://docs.langchain.com/langgraph-platform/langgraph-studio) — Visualize, debug, and test agents locally and in production
 - [Agent Server API](https://docs.langchain.com/langsmith/agent-server) — Threads, runs, assistants, and streaming
 - [You don't know what your agent will do until it's in production](https://blog.langchain.com/you-dont-know-what-your-agent-will-do-until-its-in-production/)
 
 **Frontend Integration**
-- [`@langchain/react` — `useStream` hook](https://www.npmjs.com/package/@langchain/react) — Stream agent responses in React/Next.js
-- [`langgraph-nextjs-api-passthrough`](https://www.npmjs.com/package/langgraph-nextjs-api-passthrough) — Secure Next.js API routes that proxy to your deployed agent without exposing keys in the browser
+
+- `[@langchain/react` — `useStream` hook](https://www.npmjs.com/package/@langchain/react) — Stream agent responses in React/Next.js
+- `[langgraph-nextjs-api-passthrough](https://www.npmjs.com/package/langgraph-nextjs-api-passthrough)` — Secure Next.js API routes that proxy to your deployed agent without exposing keys in the browser
 - [Next.js on Vercel](https://vercel.com/docs/frameworks/nextjs) — Deploy the frontend
 
 ## What You Are Building
@@ -39,6 +40,8 @@ flowchart LR
   Agent --> Tools[Tools + RAG + memory]
   LangSmith --> Traces[LangSmith tracing & evals]
 ```
+
+
 
 > **Important:** LangSmith deploys your agent as an **API backend only**. It does not serve a frontend. Vercel hosts the UI; LangSmith hosts the agent.
 
@@ -346,7 +349,7 @@ LANGSMITH_API_KEY=lsv2_pt_...
 NEXT_PUBLIC_API_URL=https://your-app.vercel.app/api
 ```
 
-4. Deploy
+1. Deploy
 
 ### 3. Verify end-to-end
 
@@ -428,7 +431,9 @@ Why does LangSmith deploy your agent as an API backend only, and why do you stil
 
 #### Answer
 
-_(insert your answer here)_
+LangSmith deploys the agent as an API backend because the deployed agent exposes services like assistants, threads, and runs through JSON/streaming responses instead of returning a webpage that users can interact with. It is designed to execute the LangGraph workflow, manage state, call tools/LLMs, and stream results.
+
+A separate Vercel frontend is needed because the UI is a different responsibility: rendering chat messages, handling user input, and creating the user experience. The frontend also should not directly call LangSmith with private API keys exposed in the browser, so it communicates through a proper backend/API layer.
 
 ### Question #2
 
@@ -436,7 +441,9 @@ Why should the LangSmith API key live in a Next.js API route (server-side) inste
 
 #### Answer
 
-_(insert your answer here)_
+The LangSmith API key should stay in a Next.js API route because anything sent to the browser can be inspected by users through DevTools. If the key was exposed, someone could copy it and call the API as my application, potentially using my quota, accessing protected resources, or abusing my deployment.
+
+By keeping the key server-side, the browser only talks to my `/api/*` endpoint while Vercel securely adds the credential when forwarding requests to LangSmith. Public configuration can use `NEXT_PUBLIC_` variables, but private secrets like API keys should never be exposed to client-side code.
 
 ## Activity 1: Build a Helpfulness Loop in Production
 
