@@ -1,13 +1,12 @@
-<p align = "center" draggable="false" ><img src="https://github.com/AI-Maker-Space/LLM-Dev-101/assets/37101144/d1343317-fa2f-41e1-8af1-1dbb18399719"
-     width="200px"
-     height="auto"/>
-</p>
 
-## <h1 align="center" id="heading">Session 10: LLM Servers</h1>
 
-| 📰 Session Sheet                                  | ⏺️ Recording                           | 🖼️ Slides                                   | 👨‍💻 Repo       | 📝 Homework                                              | 📁 Feedback                        |
-| ------------------------------------------------- | -------------------------------------- | ------------------------------------------- | ------------- | -------------------------------------------------------- | ---------------------------------- |
-| [Session 10: LLM Servers](https://github.com/AI-Maker-Space/The-AI-Engineering-Certification-v1.0/tree/main/00_Docs/Modules/10_LLM_Servers) |[Recording!](https://us02web.zoom.us/rec/share/zXd6__uO2RwCmJUmNyGKY01sbwYjjrkpDDNPbfK_Es0MANaqRpFOqqYX4sEVYY1d.gJwTZk1729siXnjj) <br> passcode: `^1$@$R@.`| [Session 10 Slides](https://canva.link/953giejzt5igxvw) |You are here! | [Session 10 Assignment](https://forms.gle/hKxFnEM8U16fCCnG8) | [Feedback 7/2](https://forms.gle/uj2QvYjHfHKFFQ8a6) |
+## # Session 10: LLM Servers
+
+
+| 📰 Session Sheet                                                                                                                            | ⏺️ Recording                                                                                                                                           | 🖼️ Slides                                              | 👨‍💻 Repo    | 📝 Homework                                                  | 📁 Feedback                                         |
+| ------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------- | ------------- | ------------------------------------------------------------ | --------------------------------------------------- |
+| [Session 10: LLM Servers](https://github.com/AI-Maker-Space/The-AI-Engineering-Certification-v1.0/tree/main/00_Docs/Modules/10_LLM_Servers) | [Recording!](https://us02web.zoom.us/rec/share/zXd6__uO2RwCmJUmNyGKY01sbwYjjrkpDDNPbfK_Es0MANaqRpFOqqYX4sEVYY1d.gJwTZk1729siXnjj) passcode: `^1$@$R@.` | [Session 10 Slides](https://canva.link/953giejzt5igxvw) | You are here! | [Session 10 Assignment](https://forms.gle/hKxFnEM8U16fCCnG8) | [Feedback 7/2](https://forms.gle/uj2QvYjHfHKFFQ8a6) |
+
 
 **⚠️!!! PLEASE BE SURE TO SHUTDOWN YOUR DEDICATED ENDPOINT ON FIREWORKS AI WHEN YOU'RE FINISHED YOUR ASSIGNMENT !!!⚠️**
 
@@ -18,7 +17,6 @@ In today's assignment, we'll be creating Fireworks AI endpoints, and then buildi
 - 🤝 Breakout Room #1
   - Set-up Open Source Endpoint (Instructions [here](./ENDPOINT_SETUP.md)) ((This process may take 15-20min.))
   - Test Endpoint and Embeddings with the `endpoint_slammer.ipynb` notebook.
-
 - 🤝 Breakout Room #2
   - Use the Open Source Endpoints to build a RAG LangGraph application
 
@@ -83,7 +81,11 @@ What is the difference between serverless and dedicated endpoints?
 
 #### ✅ Answer:
 
-_(insert your answer here)_
+Serverless endpoints run on the provider’s shared GPU infrastructure. They require almost no operations and are billed based on usage, such as tokens, so they are a good choice for quick experiments or workloads with unpredictable traffic. The tradeoff is that resources are shared with other users, which can lead to rate limits or less predictable latency.
+
+Dedicated endpoints provide your own GPU resources. They are billed by GPU runtime, so they can keep costing money even when the app is idle. In exchange, they provide more predictable performance and control over settings like GPU type, replica count, quantization, autoscaling, and scale-to-zero.
+
+Pick serverless when I want simple setup, low maintenance, and pay-per-use. Pick dedicated when I need consistent performance, customization, and guaranteed capacity.
 
 ### ❓ Question #2:
 
@@ -91,7 +93,11 @@ Why is it important to consider token throughput and latency when choosing an LL
 
 #### ✅ Answer:
 
-_(insert your answer here)_
+Token throughput and latency matter for user-facing applications because they directly affect user experience and scalability. Time to first token controls how quickly the app feels responsive, while token throughput controls how fast the response finishes streaming.
+
+For user-facing apps, token throughput and latency matter because they determine whether the product feels responsive, reliable, and affordable to run. For exmaple, a chat app is not only judged by answer quality because users also care about how quickly it starts responding and whether the stream continues smoothly.
+
+These metrics also show how much traffic an endpoint can handle before requests start queueing, which affects tail latency and the user experience under load. A model that is very accurate but slow or expensive may be better for deep tasks, while a faster and cheaper model may be better for everyday interactions. So choosing an LLM is really a tradeoff between quality, speed, capacity, and cost.
 
 ## Activity 1: RAGAS Evaluation with Cost Analysis
 

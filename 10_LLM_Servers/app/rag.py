@@ -23,13 +23,86 @@ from langchain_core.tools import tool
 from langchain_openai import ChatOpenAI
 from langchain_openai.embeddings import OpenAIEmbeddings
 from langchain_qdrant import QdrantVectorStore
+from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langgraph.graph import START, StateGraph
+
+FIREWORKS_BASE_URL = "https://api.fireworks.ai/inference/v1"
+
+# Shared RAG prompt. Exposed so evaluation harnesses can reuse the exact prompt.
+RAG_HUMAN_TEMPLATE = (
+    "\n#CONTEXT:\n{context}\n\nQUERY:\n{query}\n\n"
+    "Use the provide context to answer the provided user query. "
+    "Only use the provided context to answer the query. If you do not know the answer, or it's not contained in the provided context respond with \"I don't know\""
+)
 
 
 def _tiktoken_len(text: str) -> int:
     """Return token length using tiktoken; used for chunk length measurement."""
     tokens = tiktoken.encoding_for_model("gpt-4o").encode(text)
     return len(tokens)
+
+
+def build_prompt() -> ChatPromptTemplate:
+    """Return the shared RAG chat prompt (expects `context` and `query`)."""
+    return ChatPromptTemplate.from_messages([("human", RAG_HUMAN_TEMPLATE)])
+
+
+def build_fireworks_generator(model_name: str | None = None) -> ChatOpenAI:
+    """Return a ChatOpenAI generator pointed at Fireworks."""
+    return ChatOpenAI(
+        model=model_name
+        or os.environ.get("FIREWORKS_CHAT_MODEL", "accounts/fireworks/models/gpt-oss-20b"),
+        openai_api_key=os.environ["FIREWORKS_API_KEY"],
+        openai_api_base=FIREWORKS_BASE_URL,
+    )
+
+
+def build_retriever(data_dir: str | None = None):
+    """Load PDFs, chunk, embed with Fireworks, and return a Qdrant retriever.
+
+    This is the single source of truth for the retrieval stack, reused by both
+    the RAG graph and the evaluation notebook.
+    """
+    data_dir = data_dir or os.environ.get("RAG_DATA_DIR", "data")
+
+    try:
+        directory_loader = DirectoryLoader(
+            data_dir, glob="**/*.pdf", loader_cls=PyMuPDFLoader
+        )
+        documents = directory_loader.load()
+    except Exception:
+        documents = []
+
+    text_splitter = RecursiveCharacterTextSplitter(
+        chunk_size=750, chunk_overlap=0, length_function=_tiktoken_len
+    )
+    chunks = text_splitter.split_documents(documents) if documents else []
+
+    # Only send `dimensions` if FIREWORKS_EMBEDDING_DIM is set; otherwise let the
+    # model return its native size. The Qwen3 embedding models differ (8B -> 4096,
+    # 4B -> 2560), and you cannot request a size larger than the model's native
+    # dimension, so a hardcoded value breaks whichever model doesn't match it.
+    embedding_kwargs = {}
+    _embedding_dim = os.environ.get("FIREWORKS_EMBEDDING_DIM")
+    if _embedding_dim:
+        embedding_kwargs["dimensions"] = int(_embedding_dim)
+
+    embedding_model = OpenAIEmbeddings(
+        model=os.environ.get(
+            "FIREWORKS_EMBEDDING_MODEL", "accounts/fireworks/models/qwen3-embedding-8b"
+        ),
+        openai_api_key=os.environ["FIREWORKS_API_KEY"],
+        openai_api_base=FIREWORKS_BASE_URL,
+        check_embedding_ctx_length=False,
+        **embedding_kwargs,
+    )
+    qdrant_vectorstore = QdrantVectorStore.from_documents(
+        documents=chunks,
+        embedding=embedding_model,
+        location=":memory:",
+        collection_name="rag_collection",
+    )
+    return qdrant_vectorstore.as_retriever()
 
 
 class _RAGState(TypedDict):
@@ -44,57 +117,13 @@ def _build_rag_graph(data_dir: str):
     """Construct and compile a minimal RAG graph.
 
     Steps:
-    1) Load PDFs from `data_dir` recursively (best-effort).
-    2) Split documents into token-aware chunks.
-    3) Create embeddings and an in-memory Qdrant vector store retriever.
-    4) Define a chat prompt and generation model.
-    5) Wire a two-node graph: retrieve -> generate.
+    1) Build the shared retriever (load -> chunk -> embed -> Qdrant).
+    2) Build the shared prompt and Fireworks generator.
+    3) Wire a two-node graph: retrieve -> generate.
     """
-    # Load PDFs from data directory (recursive)
-    try:
-        directory_loader = DirectoryLoader(
-            data_dir, glob="**/*.pdf", loader_cls=PyMuPDFLoader
-        )
-        documents = directory_loader.load()
-    except Exception:
-        documents = []
-
-    # Split documents
-    from langchain_text_splitters import RecursiveCharacterTextSplitter
-
-    text_splitter = RecursiveCharacterTextSplitter(
-        chunk_size=750, chunk_overlap=0, length_function=_tiktoken_len
-    )
-    chunks = text_splitter.split_documents(documents) if documents else []
-
-    # Embeddings and vector store (in-memory Qdrant)
-    embedding_model = OpenAIEmbeddings(
-        model=os.environ.get("FIREWORKS_EMBEDDING_MODEL", "accounts/fireworks/models/qwen3-embedding-8b"),
-        openai_api_key=os.environ["FIREWORKS_API_KEY"],
-        openai_api_base="https://api.fireworks.ai/inference/v1",
-        check_embedding_ctx_length=False,
-        dimensions=4096,
-    )
-    qdrant_vectorstore = QdrantVectorStore.from_documents(
-        documents=chunks,
-        embedding=embedding_model,
-        location=":memory:",
-        collection_name="rag_collection",
-    )
-    retriever = qdrant_vectorstore.as_retriever()
-
-    # Prompt and model
-    human_template = (
-        "\n#CONTEXT:\n{context}\n\nQUERY:\n{query}\n\n"
-        "Use the provide context to answer the provided user query. "
-        "Only use the provided context to answer the query. If you do not know the answer, or it's not contained in the provided context respond with \"I don't know\""
-    )
-    chat_prompt = ChatPromptTemplate.from_messages([("human", human_template)])
-    generator_llm = ChatOpenAI(
-        model=os.environ.get("FIREWORKS_CHAT_MODEL", "accounts/fireworks/models/gpt-oss-20b"),
-        openai_api_key=os.environ["FIREWORKS_API_KEY"],
-        openai_api_base="https://api.fireworks.ai/inference/v1",
-    )
+    retriever = build_retriever(data_dir)
+    chat_prompt = build_prompt()
+    generator_llm = build_fireworks_generator()
 
     def retrieve(state: _RAGState) -> _RAGState:
         retrieved_docs = retriever.invoke(state["question"]) if retriever else []
