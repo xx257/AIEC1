@@ -1,0 +1,13 @@
+[project]
+name = "chat-app"
+version = "0.1.0"
+description = "Skeleton chat web app: FastAPI backend + vanilla JS frontend with a stubbed chat endpoint."
+requires-python = ">=3.12"
+dependencies = [
+    "claude-agent-sdk>=0.1",
+    "fastapi>=0.115",
+    "uvicorn[standard]>=0.30",
+]
+
+[tool.uv]
+package = false

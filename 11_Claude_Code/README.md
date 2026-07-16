@@ -1,22 +1,21 @@
-<p align = "center" draggable="false" ><img src="https://github.com/AI-Maker-Space/LLM-Dev-101/assets/37101144/d1343317-fa2f-41e1-8af1-1dbb18399719"
-     width="200px"
-     height="auto"/>
-</p>
+# Session 11: Claude Code & the Claude Agent SDK
 
-<h1 align="center" id="heading">Session 11: Claude Code & the Claude Agent SDK</h1>
 
-| 📰 Session Sheet | ⏺️ Recording | 🖼️ Slides | 👨‍💻 Repo | 📝 Homework | 📁 Feedback |
-|:-----------------|:-------------|:----------|:----------|:------------|:------------|
-| [Session 11: Claude Code & Claude Agent SDK ](https://github.com/AI-Maker-Space/The-AI-Engineering-Certification-v1.0/tree/main/00_Docs/Modules/11_Claude_Code) |[Recording!](https://us02web.zoom.us/rec/share/2I5HA6DwVFgmtyjPaq1SJDgkaVEuYZoWYyMCK8DOAZ99Zm6f7dTi0IGONXj6mRel.YHFzKF03mI5v6JAM) <br> passcode: `&Qhi!cf0`| [Session 11 Slides](https://canva.link/uw1cl42x84tm6zh) |You are here! <br><br> [Certification Challenge](https://github.com/AI-Maker-Space/The-AI-Engineering-Certification-v1.0/tree/main/00_Docs/Certification%20Challenge) | [Optional Session 11 Assignment](https://forms.gle/sAyr5BgBLTfgJV8EA) <br><br>  [Cert Challenge Submission Form](https://forms.gle/xtM9F38nfRKcdjH97)| [Feedback 7/7](https://forms.gle/oDrguLDNvva65mtM8) |
+| 📰 Session Sheet                                                                                                                                               | ⏺️ Recording                                                                                                                                           | 🖼️ Slides                                              | 👨‍💻 Repo                                                                                                                                                   | 📝 Homework                                                                                                                                 | 📁 Feedback                                         |
+| -------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------- |
+| [Session 11: Claude Code & Claude Agent SDK](https://github.com/AI-Maker-Space/The-AI-Engineering-Certification-v1.0/tree/main/00_Docs/Modules/11_Claude_Code) | [Recording!](https://us02web.zoom.us/rec/share/2I5HA6DwVFgmtyjPaq1SJDgkaVEuYZoWYyMCK8DOAZ99Zm6f7dTi0IGONXj6mRel.YHFzKF03mI5v6JAM) passcode: `&Qhi!cf0` | [Session 11 Slides](https://canva.link/uw1cl42x84tm6zh) | You are here! [Certification Challenge](https://github.com/AI-Maker-Space/The-AI-Engineering-Certification-v1.0/tree/main/00_Docs/Certification%20Challenge) | [Optional Session 11 Assignment](https://forms.gle/sAyr5BgBLTfgJV8EA) [Cert Challenge Submission Form](https://forms.gle/xtM9F38nfRKcdjH97) | [Feedback 7/7](https://forms.gle/oDrguLDNvva65mtM8) |
+
 
 ## Useful Resources
 
 **Claude Code**
+
 - [Claude Code Documentation](https://code.claude.com/docs) — official docs: setup, workflows, settings
 - [Claude Code Quickstart](https://code.claude.com/docs/en/quickstart) — from install to first session
 - [Claude Code Best Practices](https://www.anthropic.com/engineering/claude-code-best-practices) — Anthropic engineering guide
 
 **Claude Agent SDK**
+
 - [Agent SDK Overview](https://docs.anthropic.com/en/api/agent-sdk/overview) — what the SDK is and when to use it
 - [Building Agents with the Claude Agent SDK](https://www.anthropic.com/engineering/building-agents-with-the-claude-agent-sdk) — Anthropic engineering deep dive
 
@@ -66,7 +65,9 @@ While scaffolding in Task 3 you used **plan mode** before letting Claude Code wr
 
 #### ✅ Answer
 
-_(insert your answer here)_
+A shell command can make real changes, while an LLM response is just text. If Claude gives a bad answer, I can ignore it and ask again. But if it deletes files, overwrites code, or runs the wrong command, those changes happen immediately. The permission system is there because the model doesn’t actually know whether its actions are correct, so a human still needs to approve anything that could affect the real environment.
+
+Plan mode is especially useful when starting from an empty directory because there are no constraints yet. In an existing project, the codebase, folder structure, and tests help guide decisions. In a new project, the first few choices often become the foundation for everything that comes later.
 
 ### ❓ Question #2
 
@@ -74,7 +75,11 @@ _(insert your answer here)_
 
 #### ✅ Answer
 
-_(insert your answer here)_
+`CLAUDE.md` should contain information that Claude can’t easily learn from reading the code itself. Things like how to run the project, required environment variables, important architectural decisions, or project-specific rules are good candidates. In my project, I included notes about where the agent logic lives and some tool-related behavior that isn’t obvious from a quick scan of the codebase.
+
+What doesn’t belong is information that can already be found in the code, long explanations, or notes that are unlikely to affect future work. Since the file is loaded into every session, every line takes up context that could be used for solving the actual task.
+
+This connects closely to Session 3’s discussion of context management and memory. `CLAUDE.md`is more like retrieval than memory. Instead of trying to remember everything, it should contain only the small amount of information that’s consistently useful across sessions. The goal is to provide the right context, not the most context. One thing I learned while working on the assignment is that stale context can be dangerous. At one point, my `CLAUDE.md` still described the original echo stub after I had already replaced it. Claude trusted the note and incorrectly assumed the stub was still there. That experience reinforced that outdated context can be worse than no context at all, because the model may treat it as an authoritative source.
 
 ### ❓ Question #3
 
@@ -82,7 +87,9 @@ The Agent SDK gives you the same agent loop that powers Claude Code. Compare thi
 
 #### ✅ Answer
 
-_(insert your answer here)_
+The biggest thing the Agent SDK gives me for free is the entire agent loop. In Sessions 2-4, I had to build and manage that loop myself with LangGraph: model calls, tool execution, state management, memory, and all the logic that keeps the agent running. With the Agent SDK, most of that is already built in. For example, session memory only required creating a session and passing the session ID back in future requests, whereas in LangGraph I had to explicitly manage state and persistence myself.
+
+The tradeoff is that I have less visibility and control over what happens inside the loop. With LangGraph, I could see every step, add custom logic between model and tool calls, branch based on state, or design completely different workflows. With the Agent SDK, I mostly provide the prompt, tools, and configuration, then let the SDK handle the execution flow.
 
 ### ❓ Question #4
 
@@ -90,7 +97,11 @@ Your chat app could have called a chat completions API directly, the way you did
 
 #### ✅ Answer
 
-_(insert your answer here)_
+By routing messages through the Agent SDK’s `query()` instead of calling a chat completions API directly, the agent can actively gather information instead of relying only on the context I provide. Earlier in the course, if I wanted the model to answer questions about a codebase, I had to manually select and paste the relevant files. With the Agent SDK, the agent can search the repository, read files, and retrieve the information it needs before generating a response. That makes the answers more grounded and scalable.
+
+The tradeoff is that an agent with tools can take actions, not just generate text. A normal chat completion can give a bad answer, but an agent can potentially run commands or use tools in ways I didn’t intend. Since my chat app accepts user input, I need to think about what actions the agent is allowed to perform, not just what answers it generates.
+
+I addressed that risk by restricting the agent to read-only capabilities and removing any tools that could modify the environment. During testing, I discovered that `allowed_tools` is only an auto-approval list, not a true security boundary. The agent could still attempt to call tools that were not on that listI even saw it reach for `Bash`. The real protection is actually coming from `disallowed_tools`, which removes tools such as `Bash`, `Write`, `Edit`, and `WebFetch` from the session entirely. That means the model cannot execute shell commands, modify files, or access the network, even if prompted by a user message or instructions hidden in a file it reads. I also left the permission mode at the SDK default because this application runs headlessly on a server. Since there is no human available to approve tool calls at runtime, the safety guarantees need to come from the tool configuration itself rather than interactive approval prompts.
 
 ## Activity 1: Level Up the Chat App
 
@@ -101,6 +112,10 @@ Extend your working chat app with **at least one** of the following (built with 
 3. **A second custom tool** — something genuinely useful for your target repo (e.g. `git_log` for recent changes, or a test-runner summary tool)
 
 Whichever you pick, demo it in your Loom video and explain the design decision in one paragraph.
+
+- **Live progress streaming**
+
+I added streaming because real requests against my repository often took 7–15 seconds, and a loading spinner doesn't tell the user whether the agent is working or the request has stalled. Since `query()` already streams tool calls as the agent works, I used Server-Sent Events (SSE) to surface that progress in the UI. I chose SSE over WebSockets because the communication is one-way and only lasts for a single request, and `EventSource` is built into the browser so it required no extra dependencies. The main tradeoff is that `EventSource` only supports GET requests, so the message has to be passed through the query string instead of a JSON body. I kept the original `POST /api/chat` endpoint for testing with curl and as a fallback, and both routes use the same`stream_reply()` function so the agent logic remains in one place.
 
 ## Advanced Activity: The Cat Shop Concierge
 
@@ -158,10 +173,10 @@ git pull upstream main
 git push origin main
 ```
 
-2. Work through `01_Installing_Claude_Code.md`, `02_Using_Claude_Code.md`, and `03_Claude_Agent_SDK.md` in order.
-3. Build your chat app in a new `chat-app/` folder inside this session directory (include its `CLAUDE.md` — we want to see it!).
-4. Fill in your answers to Questions #1–#4 in this README.
-5. Complete Activity #1 and record your Loom video.
-6. Add, commit, and push your work to your origin repository. Remove `.env` files and API keys before committing.
+1. Work through `01_Installing_Claude_Code.md`, `02_Using_Claude_Code.md`, and `03_Claude_Agent_SDK.md` in order.
+2. Build your chat app in a new `chat-app/` folder inside this session directory (include its `CLAUDE.md` — we want to see it!).
+3. Fill in your answers to Questions #1–#4 in this README.
+4. Complete Activity #1 and record your Loom video.
+5. Add, commit, and push your work to your origin repository. Remove `.env` files and API keys before committing.
 
 When submitting your homework, provide the GitHub URL to your repo.
